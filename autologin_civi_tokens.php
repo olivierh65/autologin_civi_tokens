@@ -323,11 +323,20 @@ function autologin_civi_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent
 function autologin_civi_tokens_createLoginUrl ($alu_service, $absurl, $drupalid, $path, $site_url) {
   $autoPath = $alu_service->create($drupalid, $path, false);
   if ( $absurl) {
-     return $site_url . '/' . $autoPath;
+     $urlpath=$site_url . '/' . $autoPath;
   }
   else {
-     return $autoPath;
+     $urlpath=$autoPath;
   }
+  if (\Drupal::config('autologin_civi_tokens.settings')->get('trace')) {
+   \Drupal::logger('autologin_civi_tokens')->notice('id: @id, path: @path, absurl: @absurl, url: @url, ', array(
+      '@id' => $drupalid,
+      '@path' => $path,
+      '@absurl' => $absurl,
+      '@url' => $autoPath,
+   ));
+  }
+  return $urlpath;
 }
 
 function autologin_civi_tokens_setToken($row, $profile, $token, $value) {
