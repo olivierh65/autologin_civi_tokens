@@ -28,9 +28,9 @@
     <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
   <civix>
-    <namespace>CRM/AutologinTokens</namespace>
+    <namespace>CRM/AutologinCiviTokens</namespace>
     <format>23.02.1</format>
-    <angularModule>crmAutologinTokens</angularModule>
+    <angularModule>crmAutologinCiviTokens</angularModule>
   </civix>
   <mixins>
     <mixin>mgd-php@1.0.0</mixin>

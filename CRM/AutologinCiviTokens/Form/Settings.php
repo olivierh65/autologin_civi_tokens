@@ -1,13 +1,13 @@
 <?php
 
-use CRM_AutologinTokens_ExtensionUtil as E;
+use CRM_AutologinCiviTokens_ExtensionUtil as E;
 
 /**
  * Form controller class
  *
  * @see https://docs.civicrm.org/dev/en/latest/framework/quickform/
  */
-class CRM_AutologinTokens_Form_Settings extends CRM_Core_Form {
+class CRM_AutologinCiviTokens_Form_Settings extends CRM_Core_Form {
   public function buildQuickForm() {
 
     //Webform

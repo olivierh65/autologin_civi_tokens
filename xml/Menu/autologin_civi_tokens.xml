@@ -3,7 +3,7 @@
   <item>
      <path>civicrm/autologin_civi_tokens/setting</path>
      <title>Autologin_civi_tokens settings</title>
-     <page_callback>CRM_AutologinTokens_Form_Settings</page_callback>
+     <page_callback>CRM_AutologinCiviTokens_Form_Settings</page_callback>
 	 <access_arguments>administer CiviCRM</access_arguments>
   </item>
 </menu>

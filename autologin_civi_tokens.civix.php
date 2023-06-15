@@ -6,10 +6,10 @@
  * The ExtensionUtil class provides small stubs for accessing resources of this
  * extension.
  */
-class CRM_AutologinTokens_ExtensionUtil {
+class CRM_AutologinCiviTokens_ExtensionUtil {
   const SHORT_NAME = 'autologin_civi_tokens';
   const LONG_NAME = 'autologin_civi_tokens';
-  const CLASS_PREFIX = 'CRM_AutologinTokens';
+  const CLASS_PREFIX = 'CRM_AutologinCiviTokens';
 
   /**
    * Translate a string using the extension's domain.
@@ -77,7 +77,7 @@ class CRM_AutologinTokens_ExtensionUtil {
 
 }
 
-use CRM_AutologinTokens_ExtensionUtil as E;
+use CRM_AutologinCiviTokens_ExtensionUtil as E;
 
 /**
  * (Delegated) Implements hook_civicrm_config().

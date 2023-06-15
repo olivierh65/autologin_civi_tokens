@@ -2,7 +2,7 @@
 
 require_once 'autologin_civi_tokens.civix.php';
 // phpcs:disable
-use CRM_AutologinTokens_ExtensionUtil as E;
+use CRM_AutologinCiviTokens_ExtensionUtil as E;
 // phpcs:enable
 
 use Symfony\Component\Config\Resource\FileResource;
