@@ -13,67 +13,69 @@ class CRM_AutologinCiviTokens_Form_Settings extends CRM_Core_Form {
     //Webform
     $this->add(
       'advcheckbox',
-      'autologin_webform',
+      'autologin_civi_tokens_webform',
       'Webform',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_webform') == null ? true : Civi::settings()->get('autologin_webform'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_webform') == null ? true : Civi::settings()->get('autologin_civi_tokens_webform'));
     $this->add(
       'advcheckbox',
-      'autologin_webform_open',
+      'autologin_civi_tokens_webform_open',
       'Opened only',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_webform_open') == null ? true : Civi::settings()->get('autologin_webform_open'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_webform_open') == null ? true : Civi::settings()->get('autologin_civi_tokens_webform_open'));
 
     $this->add(
       'advcheckbox',
-      'autologin_webform_submission',
+      'autologin_civi_tokens_webform_submission',
       'Submission',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_webform_submission') == null ? false : Civi::settings()->get('autologin_webform_submission'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_webform_submission') == null ? false : Civi::settings()->get('autologin_civi_tokens_webform_submission'));
     $this->add(
       'advcheckbox',
-      'autologin_webform_submission_open',
+      'autologin_civi_tokens_webform_submission_open',
       'Opened only',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_webform_submission_open') == null ? false : Civi::settings()->get('autologin_webform_submission_open'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_webform_submission_open') == null ? false : Civi::settings()->get('autologin_civi_tokens_webform_submission_open'));
 
     // View
     $this->add(
       'advcheckbox',
-      'autologin_view',
+      'autologin_civi_tokens_view',
       'View',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_view') == null ? false : Civi::settings()->get('autologin_view'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_view') == null ? false : Civi::settings()->get('autologin_civi_tokens_view'));
 
     // URL
     $this->add(
       'advcheckbox',
-      'autologin_url',
+      'autologin_civi_tokens_absurl',
       'Absolute URL',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_url') == null ? true : Civi::settings()->get('autologin_url'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_absurl') == null ? true : Civi::settings()->get('autologin_civi_tokens_absurl'));
 
     // Trace
+    // Log URL
     $this->add(
       'advcheckbox',
-      'autologin_log_url',
+      'autologin_civi_tokens_log_url',
       'Log URL creation',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_log_url') == null ? false : Civi::settings()->get('autologin_log_url'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_log_url') == null ? false : Civi::settings()->get('autologin_civi_tokens_log_url'));
+    // Debug
     $this->add(
       'advcheckbox',
-      'autologin_debug',
+      'autologin_civi_tokens_debug',
       'Log debug in base',
       '',
       false,
-    )->setChecked(Civi::settings()->get('autologin_debug') == null ? false : Civi::settings()->get('autologin_debug'));
+    )->setChecked(Civi::settings()->get('autologin_civi_tokens_debug') == null ? false : Civi::settings()->get('autologin_civi_tokens_debug'));
 
     $this->addButtons(array(
       array(
@@ -91,17 +93,17 @@ class CRM_AutologinCiviTokens_Form_Settings extends CRM_Core_Form {
   public function postProcess() {
     $values = $this->exportValues();
 
-    Civi::settings()->set('autologin_webform', $values['autologin_webform']);
-    Civi::settings()->set('autologin_webform_open', $values['autologin_webform_open']);
-    Civi::settings()->set('autologin_webform_submission', $values['autologin_webform_submission']);
-    Civi::settings()->set('autologin_webform_submission_open', $values['autologin_webform_submission_open']);
+    Civi::settings()->set('autologin_civi_tokens_webform', $values['autologin_civi_tokens_webform']);
+    Civi::settings()->set('autologin_civi_tokens_webform_open', $values['autologin_civi_tokens_webform_open']);
+    Civi::settings()->set('autologin_civi_tokens_webform_submission', $values['autologin_civi_tokens_webform_submission']);
+    Civi::settings()->set('autologin_civi_tokens_webform_submission_open', $values['autologin_civi_tokens_webform_submission_open']);
 
-    Civi::settings()->set('autologin_view', $values['autologin_view']);
+    Civi::settings()->set('autologin_civi_tokens_view', $values['autologin_civi_tokens_view']);
 
-    Civi::settings()->set('autologin_url', $values['autologin_url']);
+    Civi::settings()->set('autologin_civi_tokens_absurl', $values['autologin_civi_tokens_absurl']);
 
-    Civi::settings()->set('autologin_log_url', $values['autologin_log_url']);
-    Civi::settings()->set('autologin_debug', $values['autologin_debug']);
+    Civi::settings()->set('autologin_civi_tokens_log_url', $values['autologin_civi_tokens_log_url']);
+    Civi::settings()->set('autologin_civi_tokens_debug', $values['autologin_civi_tokens_debug']);
 
 
     parent::postProcess();
