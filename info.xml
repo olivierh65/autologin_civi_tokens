@@ -1,15 +1,17 @@
 <?xml version="1.0"?>
-<extension key="autologin_tokens" type="module">
-  <file>autologin_tokens</file>
-  <name>autologin_tokens</name>
-  <description>FIXME</description>
+<extension key="autologin_civi_tokens" type="module">
+  <file>autologin_civi_tokens</file>
+  <name>autologin_civi_tokens</name>
+  <description>When drupal module autologin_url is enabled, add tokens to connect and redirect to webform/view or front page.
+  Mainly used in mailings for members.
+  </description>
   <license>AGPL-3.0</license>
   <maintainer>
-    <author>FIXME</author>
-    <email>FIXME</email>
+    <author>olivier</author>
+    <email>ol65@free.fr</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">http://FIXME</url>
+    <url desc="Main Extension Page">https://github.com/olivierh65/autologin_civi_tokens.git</url>
     <url desc="Documentation">http://FIXME</url>
     <url desc="Support">http://FIXME</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>

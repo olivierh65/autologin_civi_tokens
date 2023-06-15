@@ -1,4 +1,4 @@
-Package: autologin_tokens
+Package: autologin_civi_tokens
 Copyright (C) 2023, FIXME <FIXME>
 Licensed under the GNU Affero Public License 3.0 (below).
 

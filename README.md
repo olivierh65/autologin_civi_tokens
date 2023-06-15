@@ -1,4 +1,4 @@
-# autologin_tokens
+# autologin_civi_tokens
 
 ![Screenshot](/images/screenshot.png)
 
@@ -22,12 +22,12 @@ install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
 cd <extension-dir>
-cv dl autologin_tokens@https://github.com/FIXME/autologin_tokens/archive/master.zip
+cv dl autologin_civi_tokens@https://github.com/FIXME/autologin_civi_tokens/archive/master.zip
 ```
 or
 ```bash
 cd <extension-dir>
-cv dl autologin_tokens@https://lab.civicrm.org/extensions/autologin_tokens/-/archive/main/autologin_tokens-main.zip
+cv dl autologin_civi_tokens@https://lab.civicrm.org/extensions/autologin_civi_tokens/-/archive/main/autologin_civi_tokens-main.zip
 ```
 
 ## Installation (CLI, Git)
@@ -36,13 +36,13 @@ Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) 
 install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
-git clone https://github.com/FIXME/autologin_tokens.git
-cv en autologin_tokens
+git clone https://github.com/FIXME/autologin_civi_tokens.git
+cv en autologin_civi_tokens
 ```
 or
 ```bash
-git clone https://lab.civicrm.org/extensions/autologin_tokens.git
-cv en autologin_tokens
+git clone https://lab.civicrm.org/extensions/autologin_civi_tokens.git
+cv en autologin_civi_tokens
 ```
 
 ## Getting Started

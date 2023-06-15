@@ -1,6 +1,6 @@
 <?php
 
-require_once 'autologin_tokens.civix.php';
+require_once 'autologin_civi_tokens.civix.php';
 // phpcs:disable
 use CRM_AutologinTokens_ExtensionUtil as E;
 // phpcs:enable
@@ -15,8 +15,8 @@ use Drupal\Core\Datetime\DrupalDateTime;
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_config/
  */
-function autologin_tokens_civicrm_config(&$config): void {
-  _autologin_tokens_civix_civicrm_config($config);
+function autologin_civi_tokens_civicrm_config(&$config): void {
+  _autologin_civi_tokens_civix_civicrm_config($config);
 }
 
 /**
@@ -24,8 +24,8 @@ function autologin_tokens_civicrm_config(&$config): void {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_install
  */
-function autologin_tokens_civicrm_install(): void {
-  _autologin_tokens_civix_civicrm_install();
+function autologin_civi_tokens_civicrm_install(): void {
+  _autologin_civi_tokens_civix_civicrm_install();
 }
 
 /**
@@ -33,8 +33,8 @@ function autologin_tokens_civicrm_install(): void {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_enable
  */
-function autologin_tokens_civicrm_enable(): void {
-  _autologin_tokens_civix_civicrm_enable();
+function autologin_civi_tokens_civicrm_enable(): void {
+  _autologin_civi_tokens_civix_civicrm_enable();
 }
 
 // --- Functions below this ship commented out. Uncomment as required. ---
@@ -44,7 +44,7 @@ function autologin_tokens_civicrm_enable(): void {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_preProcess
  */
-//function autologin_tokens_civicrm_preProcess($formName, &$form): void {
+//function autologin_civi_tokens_civicrm_preProcess($formName, &$form): void {
 //
 //}
 
@@ -53,17 +53,17 @@ function autologin_tokens_civicrm_enable(): void {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu
  */
-function autologin_tokens_civicrm_navigationMenu(&$menu): void {
-  _autologin_tokens_civix_insert_navigation_menu($menu, 'Mailings', [
+function autologin_civi_tokens_civicrm_navigationMenu(&$menu): void {
+  _autologin_civi_tokens_civix_insert_navigation_menu($menu, 'Mailings', [
     'label' => E::ts('Autologin civicrm settings'),
     'name' => 'autologin_civicrm_settings',
-    'url' => 'civicrm/autologin_tokens/setting',
+    'url' => 'civicrm/autologin_civi_tokens/setting',
     'permission' => 'administer CiviCRM',
     'operator' => 'AND',
     'separator' => 1,
     'active' => 1,
   ]);
-  _autologin_tokens_civix_navigationMenu($menu);
+  _autologin_civi_tokens_civix_navigationMenu($menu);
 }
 
 
@@ -72,28 +72,28 @@ function autologin_tokens_civicrm_navigationMenu(&$menu): void {
  *
  * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
  */
-function autologin_tokens_civicrm_container(ContainerBuilder $container) {
+function autologin_civi_tokens_civicrm_container(ContainerBuilder $container) {
   if (defined('CIVICRM_UF') && CIVICRM_UF == 'Drupal8') {
     $container->addResource(new FileResource(__FILE__));
     $container->findDefinition('dispatcher')->addMethodCall('addListener',
-      ['civi.token.list', 'autologin_tokens_register_tokens']
+      ['civi.token.list', 'autologin_civi_tokens_register_tokens']
     )->setPublic(TRUE);
     $container->findDefinition('dispatcher')->addMethodCall('addListener',
-      ['civi.token.eval', 'autologin_tokens_evaluate_tokens']
+      ['civi.token.eval', 'autologin_civi_tokens_evaluate_tokens']
     )->setPublic(TRUE);
   }
 }
 
-function autologin_tokens_register_tokens(\Civi\Token\Event\TokenRegisterEvent $e) {
-  $e->entity('autologin_tokens')->register('username_drupal', ts('Drupal username'));
+function autologin_civi_tokens_register_tokens(\Civi\Token\Event\TokenRegisterEvent $e) {
+  $e->entity('autologin_civi_tokens')->register('username_drupal', ts('Drupal username'));
 
-  $config = \Drupal::config('autologin_tokens.settings');
+  $config = \Drupal::config('autologin_civi_tokens.settings');
 
   $config_civi = CRM_Core_Config::singleton();
 
   if (CIVICRM_UF == 'Drupal8') {
      if ( \Drupal::moduleHandler()->moduleExists("auto_login_url")) {
-        $e->entity('autologin_tokens')
+        $e->entity('autologin_civi_tokens')
            ->register('test_page_front', ts('Autologin to front page'))
            ->register('base_site', ts('Site to connect to'));
 
@@ -123,7 +123,7 @@ function autologin_tokens_register_tokens(\Civi\Token\Event\TokenRegisterEvent $
            foreach ($c as $webform) {
               // $list_tokens["autologin.webform_" . urlencode($webform->url())] = $webform->get('title') . " :: Autologin Webforms";
               //$list_tokens["aluc_wf." . $webform->id()] = $webform->get('title') . " :: Autologin Webforms";
-              $e->entity('autologin_tokens_webform')->register($webform->id(), $webform->get('title'));
+              $e->entity('autologin_civi_tokens_webform')->register($webform->id(), $webform->get('title'));
            }
         }
 
@@ -142,7 +142,7 @@ function autologin_tokens_register_tokens(\Civi\Token\Event\TokenRegisterEvent $
                     ->load($webform_sub);
               if ((($open_only) && $wfr->getWebform()->status()) || (! $open_only)) { //Webform opened ?
                  // $list_tokens["aluc_wfs." . $wfr->id()] = $wfr->getWebform()->get('title') . " :: Autologin Webforms Submission";
-                 $e->entity('autologin_tokens_submission')->register($wfr->id(), $wfr->getWebform()->get('title'));
+                 $e->entity('autologin_civi_tokens_submission')->register($wfr->id(), $wfr->getWebform()->get('title'));
               }
            }
         }
@@ -170,7 +170,7 @@ function autologin_tokens_register_tokens(\Civi\Token\Event\TokenRegisterEvent $
                  // $list_tokens["autologin.view_" . $view->get('id') . '$' . $disp['id']] = $view->get('label') . ":" . $disp['display_title'] . " :: Autologin View";
                  if (isset($disp['display_options']['path'])) {
                     // $list_tokens["aluc_view." . $view->get('id') . '_S_E_P_' . $disp['id']] = $view->get('label') . ":" . $disp['display_title'] . " :: Autologin View";
-                    $e->entity('autologin_tokens_view')->register($view->get('id') . '_S_E_P_' . $disp['id'], $view->get('label') . ":" . $disp['display_title']);
+                    $e->entity('autologin_civi_tokens_view')->register($view->get('id') . '_S_E_P_' . $disp['id'], $view->get('label') . ":" . $disp['display_title']);
                  }
               }
            }
@@ -179,11 +179,11 @@ function autologin_tokens_register_tokens(\Civi\Token\Event\TokenRegisterEvent $
   }
 }
 
-function autologin_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent $e) {
+function autologin_civi_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent $e) {
   $tokens = $e->getTokenProcessor()->getMessageTokens();
   $config_civi = CRM_Core_Config::singleton();
 
-  $config = \Drupal::config('autologin_tokens.settings');
+  $config = \Drupal::config('autologin_civi_tokens.settings');
 
   $debug = Civi::settings()->get('autologin_debug');
 
@@ -201,14 +201,14 @@ function autologin_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent $e) 
   }
 
   if ($debug) {
-     \Drupal::logger('autologin_tokens_tokenValues')->notice('tokens: @tokens, mailingJobId: @mailingJobId, mailingid: @mailingid', array(
+     \Drupal::logger('autologin_civi_tokens_tokenValues')->notice('tokens: @tokens, mailingJobId: @mailingJobId, mailingid: @mailingid', array(
         '@tokens' => print_r($tokens, true) ,
         '@mailingJobId' => print_r($mailingJobId, true) ,
         '@mailigid' => print_r($e->getTokenProcessor()->context['mailingId'], true)
      ));
   }
 
-  if (count(preg_grep('/autologin_tokens/', array_keys($tokens)))) {
+  if (count(preg_grep('/autologin_civi_tokens/', array_keys($tokens)))) {
      $civicrm = \Drupal::service('civicrm');
      $base_url=CRM_Utils_System::baseURL();
      // base_url peut contenir un chemin, en particulier les batchs Civicrm
@@ -233,7 +233,7 @@ function autologin_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent $e) 
            $drupalinfo = \Drupal::entityTypeManager()->getStorage('user')->load($result['values'][0]['uf_id']);
 
            if ($debug) {
-              \Drupal::logger('autologin_tokens(0)')->notice('cid: @cid, tokens: @tokens, result: @result, drupal id: @drupalinfo ', array(
+              \Drupal::logger('autologin_civi_tokens(0)')->notice('cid: @cid, tokens: @tokens, result: @result, drupal id: @drupalinfo ', array(
                  '@cid' => print_r($cid, true) ,
                  '@tokens' => print_r($tokens, true) ,
                  '@result' => print_r($result, true) ,
@@ -243,41 +243,41 @@ function autologin_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent $e) 
 
            # uf_id does not exist
            if ($drupalinfo === null) {
-              \Drupal::logger('autologin_tokens')->error("Contact_id " . $cid . ", uf_id " . $result['values'][0]['uf_id'] . " don't exist. Mail not send");
+              \Drupal::logger('autologin_civi_tokens')->error("Contact_id " . $cid . ", uf_id " . $result['values'][0]['uf_id'] . " don't exist. Mail not send");
               # Remove this from mailing
               # unset($values[$cid]);
               continue;
            }
 
-           if (isset($tokens['autologin_tokens'])) {
-              foreach ($tokens['autologin_tokens'] as $token) {
+           if (isset($tokens['autologin_civi_tokens'])) {
+              foreach ($tokens['autologin_civi_tokens'] as $token) {
                  switch ($token) {
                     case 'base_site':
-                       autologin_tokens_setToken($row, 'autologin_tokens', 'base_site',$site_url . '/');
+                       autologin_civi_tokens_setToken($row, 'autologin_civi_tokens', 'base_site',$site_url . '/');
                        break;
                     case 'page_front':
-                       autologin_tokens_setToken($row, 'autologin_tokens', 'page_front',
-                          autologin_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), '/', $site_url ));
+                       autologin_civi_tokens_setToken($row, 'autologin_civi_tokens', 'page_front',
+                          autologin_civi_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), '/', $site_url ));
                        break;
                     case 'username_drupal':
-                       autologin_tokens_setToken($row, 'autologin_tokens', 'username_drupal', $drupalinfo->getAccountName());
+                       autologin_civi_tokens_setToken($row, 'autologin_civi_tokens', 'username_drupal', $drupalinfo->getAccountName());
                        break;
                  }
               }
            }
 
-           if (isset($tokens['autologin_tokens_webform'])) {
-              foreach ($tokens['autologin_tokens_webform'] as $token) {
+           if (isset($tokens['autologin_civi_tokens_webform'])) {
+              foreach ($tokens['autologin_civi_tokens_webform'] as $token) {
                  $url = \Drupal::entityTypeManager()->getStorage('webform')
                     ->load(current(\Drupal::entityQuery('webform')->condition('id', $token)->execute()))
                     ->toUrl()->toString();
-                    autologin_tokens_setToken($row, 'autologin_tokens_webform', $token,
-                    autologin_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), $url , $site_url ));
+                    autologin_civi_tokens_setToken($row, 'autologin_civi_tokens_webform', $token,
+                    autologin_civi_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), $url , $site_url ));
               }
            }
 
-           if (isset($tokens['autologin_tokens_submission'])) {
-              foreach ($tokens['autologin_tokens_submission'] as $token) {
+           if (isset($tokens['autologin_civi_tokens_submission'])) {
+              foreach ($tokens['autologin_civi_tokens_submission'] as $token) {
                  $aa=$token;
                  // $ssql = "SELECT sforms.sid FROM {webform_submissions} sforms where sforms.nid = $nid and
                  //   sforms.uid = $drupalinfo->uid order by sid desc limit 1";
@@ -287,27 +287,27 @@ function autologin_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent $e) 
                  // $url = "node/$nid/submission/$sid/edit";
                  $url=\Drupal::entityTypeManager()->getStorage('webform_submission')
                     ->load($token)->url();
-                 autologin_tokens_setToken($row, 'webform_submission', $token,
-                    autologin_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), $url , $site_url ));
+                 autologin_civi_tokens_setToken($row, 'webform_submission', $token,
+                    autologin_civi_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), $url , $site_url ));
               }
 
            }
 
-           if (isset($tokens['autologin_tokens_view'])) {
-              foreach ($tokens['autologin_tokens_view'] as $token) {
+           if (isset($tokens['autologin_civi_tokens_view'])) {
+              foreach ($tokens['autologin_civi_tokens_view'] as $token) {
                  $aa=$token;
                  list($view,$display)=explode('_S_E_P_', $token);
                     $url = '/' . \Drupal::entityTypeManager()->getStorage('view')
                     ->load(current(\Drupal::entityQuery('view')->condition('id', $view)->execute()))
                     ->get('display')[$display]['display_options']['path'];
-                 autologin_tokens_setToken($row, 'autologin_tokens_view', $token,
-                    autologin_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), $url , $site_url ));
+                 autologin_civi_tokens_setToken($row, 'autologin_civi_tokens_view', $token,
+                    autologin_civi_tokens_createLoginUrl($alu_service, Civi::settings()->get('autologin_url'), $drupalinfo->id(), $url , $site_url ));
               }
 
            }
 
            /* if ($trace) {
-              \Drupal::logger('autologin_tokens')->notice(' cid: @cid, val: @val, url: @url, cur_token_raw: @cur_token_raw ', array(
+              \Drupal::logger('autologin_civi_tokens')->notice(' cid: @cid, val: @val, url: @url, cur_token_raw: @cur_token_raw ', array(
                  '@cid' => $cid,
                  '@val' => $values[$cid][$tok_key.'.'.$tmp_key],
                  '@url' => $url,
@@ -320,7 +320,7 @@ function autologin_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent $e) 
   }
 }
 
-function autologin_tokens_createLoginUrl ($alu_service, $absurl, $drupalid, $path, $site_url) {
+function autologin_civi_tokens_createLoginUrl ($alu_service, $absurl, $drupalid, $path, $site_url) {
   $autoPath = $alu_service->create($drupalid, $path, false);
   if ( $absurl) {
      return $site_url . '/' . $autoPath;
@@ -330,7 +330,7 @@ function autologin_tokens_createLoginUrl ($alu_service, $absurl, $drupalid, $pat
   }
 }
 
-function autologin_tokens_setToken($row, $profile, $token, $value) {
+function autologin_civi_tokens_setToken($row, $profile, $token, $value) {
   $row->format('text/html');
   $row->tokens($profile, $token, $value);
   // $row->format('text/plain');

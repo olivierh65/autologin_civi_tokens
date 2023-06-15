@@ -7,8 +7,8 @@
  * extension.
  */
 class CRM_AutologinTokens_ExtensionUtil {
-  const SHORT_NAME = 'autologin_tokens';
-  const LONG_NAME = 'autologin_tokens';
+  const SHORT_NAME = 'autologin_civi_tokens';
+  const LONG_NAME = 'autologin_civi_tokens';
   const CLASS_PREFIX = 'CRM_AutologinTokens';
 
   /**
@@ -84,7 +84,7 @@ use CRM_AutologinTokens_ExtensionUtil as E;
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_config
  */
-function _autologin_tokens_civix_civicrm_config($config = NULL) {
+function _autologin_civi_tokens_civix_civicrm_config($config = NULL) {
   static $configured = FALSE;
   if ($configured) {
     return;
@@ -102,8 +102,8 @@ function _autologin_tokens_civix_civicrm_config($config = NULL) {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_install
  */
-function _autologin_tokens_civix_civicrm_install() {
-  _autologin_tokens_civix_civicrm_config();
+function _autologin_civi_tokens_civix_civicrm_install() {
+  _autologin_civi_tokens_civix_civicrm_config();
   // Based on <compatibility>, this does not currently require mixin/polyfill.php.
 }
 
@@ -112,8 +112,8 @@ function _autologin_tokens_civix_civicrm_install() {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_enable
  */
-function _autologin_tokens_civix_civicrm_enable(): void {
-  _autologin_tokens_civix_civicrm_config();
+function _autologin_civi_tokens_civix_civicrm_enable(): void {
+  _autologin_civi_tokens_civix_civicrm_config();
   // Based on <compatibility>, this does not currently require mixin/polyfill.php.
 }
 
@@ -128,7 +128,7 @@ function _autologin_tokens_civix_civicrm_enable(): void {
  *
  * @return bool
  */
-function _autologin_tokens_civix_insert_navigation_menu(&$menu, $path, $item) {
+function _autologin_civi_tokens_civix_insert_navigation_menu(&$menu, $path, $item) {
   // If we are done going down the path, insert menu
   if (empty($path)) {
     $menu[] = [
@@ -149,7 +149,7 @@ function _autologin_tokens_civix_insert_navigation_menu(&$menu, $path, $item) {
         if (!isset($entry['child'])) {
           $entry['child'] = [];
         }
-        $found = _autologin_tokens_civix_insert_navigation_menu($entry['child'], implode('/', $path), $item);
+        $found = _autologin_civi_tokens_civix_insert_navigation_menu($entry['child'], implode('/', $path), $item);
       }
     }
     return $found;
@@ -159,9 +159,9 @@ function _autologin_tokens_civix_insert_navigation_menu(&$menu, $path, $item) {
 /**
  * (Delegated) Implements hook_civicrm_navigationMenu().
  */
-function _autologin_tokens_civix_navigationMenu(&$nodes) {
+function _autologin_civi_tokens_civix_navigationMenu(&$nodes) {
   if (!is_callable(['CRM_Core_BAO_Navigation', 'fixNavigationMenu'])) {
-    _autologin_tokens_civix_fixNavigationMenu($nodes);
+    _autologin_civi_tokens_civix_fixNavigationMenu($nodes);
   }
 }
 
@@ -169,17 +169,17 @@ function _autologin_tokens_civix_navigationMenu(&$nodes) {
  * Given a navigation menu, generate navIDs for any items which are
  * missing them.
  */
-function _autologin_tokens_civix_fixNavigationMenu(&$nodes) {
+function _autologin_civi_tokens_civix_fixNavigationMenu(&$nodes) {
   $maxNavID = 1;
   array_walk_recursive($nodes, function($item, $key) use (&$maxNavID) {
     if ($key === 'navID') {
       $maxNavID = max($maxNavID, $item);
     }
   });
-  _autologin_tokens_civix_fixNavigationMenuItems($nodes, $maxNavID, NULL);
+  _autologin_civi_tokens_civix_fixNavigationMenuItems($nodes, $maxNavID, NULL);
 }
 
-function _autologin_tokens_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) {
+function _autologin_civi_tokens_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) {
   $origKeys = array_keys($nodes);
   foreach ($origKeys as $origKey) {
     if (!isset($nodes[$origKey]['attributes']['parentID']) && $parentID !== NULL) {
@@ -194,7 +194,7 @@ function _autologin_tokens_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $pa
       $origKey = $newKey;
     }
     if (isset($nodes[$origKey]['child']) && is_array($nodes[$origKey]['child'])) {
-      _autologin_tokens_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
+      _autologin_civi_tokens_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
     }
   }
 }
