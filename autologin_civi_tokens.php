@@ -320,7 +320,7 @@ function autologin_civi_tokens_evaluate_tokens(\Civi\Token\Event\TokenValueEvent
 function autologin_civi_tokens_createLoginUrl ($alu_service, $absurl, $drupalid, $path, $site_url) {
   $autoPath = $alu_service->create($drupalid, $path, false);
   if ( $absurl) {
-     $urlpath=$site_url . '/' . $autoPath;
+     $urlpath = $site_url . (str_starts_with($autoPath, '/') ? $autoPath : '/' . $autoPath);
   }
   else {
      $urlpath=$autoPath;
