@@ -88,7 +88,7 @@ function autologin_civi_tokens_civicrm_container(ContainerBuilder $container) {
       ['civi.token.eval', 'autologin_civi_tokens_evaluate_tokens']
     )->setPublic(TRUE);
     $container->findDefinition('dispatcher')->addMethodCall('addListener',
-      ['civi.token.render', 'autologin_civi_tokens_fix_render']
+      ['civi.token.render', 'autologin_civi_tokens_fix_render', -1000]
     )->setPublic(TRUE);
   }
 }
@@ -261,6 +261,14 @@ function autologin_civi_tokens_strip_login_url_suffixes(\Civi\Token\Event\TokenR
   }
 
   // 1) Suppression exacte du suffixe évalué pour ce contact.
+  // IMPORTANT : le TokenProcessor principal substitue les tokens du suffixe
+  // avec le format du message (body_html => 'text/html', avec
+  // `htmlentities()` : `Clément` => `Cl&eacute;ment`), alors que l'ancien
+  // code ne ré-évaluait qu'en 'text/plain' (`Clément` brut) : aucun variant
+  // ne correspondait, le suffixe restait, et le filet générique (stoppé au
+  // 1er espace) ne retirait que `?...&phone=06`, laissant ` 83 91 64 53`
+  // collé au hash (d'où le href cassé `...HASH 83 91 64 53`). On ré-évalue
+  // donc dans les DEUX formats et on teste toutes les variantes.
   try {
     $msg_string = is_array($e->message) ? ($e->message['string'] ?? '') : (string) $e->message;
     if ($msg_string !== '' && !empty($e->row)) {
@@ -274,18 +282,27 @@ function autologin_civi_tokens_strip_login_url_suffixes(\Civi\Token\Event\TokenR
         $base_context = (isset($tp->context) && is_array($tp->context)) ? $tp->context : [];
         $raws = [];
         foreach ($found as $item) {
-          $raw = autologin_civi_tokens_render_query_template_raw($item['query'], $row_context, $base_context);
-          if ($raw === '') {
-            continue;
+          foreach (['text/html', 'text/plain'] as $fmt) {
+            $raw = autologin_civi_tokens_render_query_template_raw($item['query'], $row_context, $base_context, $fmt);
+            if ($raw === '') {
+              continue;
+            }
+            $raws[] = ['entity' => $item['entity'], 'field' => $item['field'], 'raw' => $raw];
           }
-          $raws[] = ['entity' => $item['entity'], 'field' => $item['field'], 'raw' => $raw];
         }
         foreach ($raws as $item) {
+          $decoded = html_entity_decode($item['raw'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
           $variants = [
             $item['raw'],
+            $decoded,
             str_replace('&', '&amp;', $item['raw']),
+            str_replace('&', '&amp;', $decoded),
             str_replace(' ', '%20', $item['raw']),
+            str_replace(' ', '%20', $decoded),
             str_replace(['&', ' '], ['&amp;', '%20'], $item['raw']),
+            str_replace(['&', ' '], ['&amp;', '%20'], $decoded),
+            str_replace(' ', '+', $item['raw']),
+            str_replace(' ', '+', $decoded),
           ];
           $variants = array_unique(array_filter($variants));
           // Les plus longs d'abord (variantes combinées avant variantes simples).
@@ -333,8 +350,23 @@ function autologin_civi_tokens_strip_login_url_suffixes(\Civi\Token\Event\TokenR
 
   // 2) Filets de sécurité génériques (les `{` sont exclus pour préserver
   // les balises Smarty accolées, ex. `{/capture}`).
-  // Premier chunk `?...` (sans espaces) après une URL de login.
+  // ORDRE IMPORTANT : d'abord le suffixe AVEC espaces (ex.
+  // `?tel=06 83 91 64 53`, téléphone non encodé), mais UNIQUEMENT quand il
+  // est terminé par une balise Smarty ou la fin d'un attribut href
+  // (`{/capture}`, `"`, `'`) : on ne mange ainsi jamais du vrai texte
+  // (`...?query Merci<br>` reste intact, seul le cas capture/href — le seul
+  // légitime pour un suffixe à espaces — est nettoyé). Le `?` doit contenir
+  // un `=` pour éviter de couper un `?` de ponctuation.
+  $e->string = preg_replace('#(/autologinurl/\d+/[A-Za-z0-9_\-]+)(\?[^"\'<>\\{]*=[^"\'<>\\{]*)(?=["\'\\{])#', '$1', $e->string);
+  // Ensuite le premier chunk `?...` (sans espaces) après une URL de login
+  // (cas suffixe sans espaces, ou reliquat si le pattern ci-dessus n'a pas
+  // pu s'appliquer, ex. prose après le suffixe).
   $e->string = preg_replace('#(/autologinurl/\d+/[A-Za-z0-9_\-]+)(\?[^\s"\'<>\\{]*)#', '$1', $e->string);
+  // Restes ` 83 91 64 53` (fragments de téléphone) si le 1er chunk n'a
+  // retiré que `?...&phone=06` : groupes chiffres/espaces collés au hash,
+  // suivis d'un délimiteur Smarty/href/tag. Ne touche pas au texte réel
+  // (lettres), uniquement aux fragments numériques type téléphone.
+  $e->string = preg_replace('#(/autologinurl/\d+/[A-Za-z0-9_\-]+)((?: +[0-9@.\-_+%]+)+)(?=["\'\\{<\\s])#', '$1', $e->string);
   // Restes `%20...` collés directement au hash (ex. `HASH%2078%2037...`) :
   // les valeurs à espaces non encodées, partiellement nettoyées puis
   // encodées par la chaîne d'envoi.
@@ -504,16 +536,21 @@ function autologin_civi_tokens_collect_url_query_templates(TokenValueEvent $e) {
  * donné, via un TokenProcessor secondaire (supporte tous les tokens Civi,
  * pas seulement contact.*).
  *
- * Contrairement à autologin_civi_tokens_evaluate_query_template(), aucune
- * normalisation / URL-encodage n'est appliquée : les valeurs gardent leurs
- * espaces tels que le TokenProcessor principal les substitue dans le corps
- * du mailing. Sert à retrouver (puis supprimer au rendu) le suffixe exact
- * resté accolé à l'URL de login.
+ * Le rendu est fait dans le $format demandé (par défaut 'text/html', comme
+ * le body_html du mailing) : en 'text/html', les valeurs subissent
+ * `htmlentities()` + `nl2br()` (ex. `Clément` => `Cl&eacute;ment`), alors
+ * qu'en 'text/plain' elles restent brutes (`Clément`). Le TokenProcessor
+ * principal substitue les tokens du suffixe resté dans le corps avec le
+ * format du message (body_html => 'text/html'), donc pour retrouver (puis
+ * supprimer au rendu) le suffixe exact il faut le ré-évaluer dans le MÊME
+ * format. Aucune normalisation / URL-encodage n'est appliquée ici : les
+ * valeurs gardent leurs espaces tels que le TokenProcessor principal les
+ * substitue dans le corps du mailing.
  *
  * @return string
  *   Ex. '?tel=78 37 23 07&cid=123' (vide si $template vide).
  */
-function autologin_civi_tokens_render_query_template_raw($template, array $row_context, array $base_context) {
+function autologin_civi_tokens_render_query_template_raw($template, array $row_context, array $base_context, $format = 'text/html') {
   $template = trim((string) $template);
   if ($template === '' || $template === '?') {
     return '';
@@ -521,6 +558,7 @@ function autologin_civi_tokens_render_query_template_raw($template, array $row_c
   if ($template[0] !== '?' && $template[0] !== '&') {
     $template = '?' . ltrim($template, '?&');
   }
+  $format = ($format === 'text/plain') ? 'text/plain' : 'text/html';
   try {
     // Garde anti-récursion : le processeur secondaire redéclenche
     // 'civi.token.eval' (et 'civi.token.render'), donc nos propres
@@ -528,7 +566,7 @@ function autologin_civi_tokens_render_query_template_raw($template, array $row_c
     $GLOBALS['autologin_civi_tokens_nested'] = TRUE;
 
     $proc = new \Civi\Token\TokenProcessor(\Civi::dispatcher(), $base_context);
-    $proc->addMessage('autologin_query', $template, 'text/plain');
+    $proc->addMessage('autologin_query', $template, $format);
     $new_row = $proc->addRow($row_context);
     $proc->evaluate();
     $rendered = $proc->render('autologin_query', $new_row);
@@ -544,7 +582,13 @@ function autologin_civi_tokens_render_query_template_raw($template, array $row_c
     $GLOBALS['autologin_civi_tokens_nested'] = FALSE;
   }
 
-  return html_entity_decode(trim((string) $rendered), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+  // En 'text/html', le rendu contient des entités (`&eacute;`, `&#039;`,
+  // `&amp;`...) exactement comme dans le corps du mailing ; en
+  // 'text/plain', il est brut. On ne décode PAS ici : l'appelant génère
+  // les variantes (brut / décodé / `&amp;` / `%20`) pour couvrir les deux
+  // écritures rencontrées dans $e->string (avant/après Smarty, avant/après
+  // encodage href).
+  return trim((string) $rendered);
 }
 
 /**
@@ -561,9 +605,14 @@ function autologin_civi_tokens_evaluate_query_template($template, $row, TokenVal
   $row_context = $row->tokenProcessor->rowContexts[$row->tokenRow] ?? [];
   $base_context = (isset($main_tp->context) && is_array($main_tp->context)) ? $main_tp->context : [];
 
-  // Rendu brut (espaces conservés), puis normalisation + encodage pour le
-  // stockage en base (destination portée par le hash).
-  $rendered = autologin_civi_tokens_render_query_template_raw($template, $row_context, $base_context);
+  // Rendu brut en 'text/plain' (valeurs décodées, ex. `Clément` et non
+  // `Cl&eacute;ment`) pour le stockage en base, puis normalisation +
+  // encodage RFC3986 pour la destination portée par le hash.
+  // NB : le nettoyage au rendu ré-évalue lui dans les DEUX formats
+  // (html + plain) pour retrouver le suffixe tel qu'il apparaît dans le
+  // corps du mailing (htmlentities en body_html).
+  $rendered = autologin_civi_tokens_render_query_template_raw($template, $row_context, $base_context, 'text/plain');
+  $rendered = html_entity_decode($rendered, ENT_QUOTES | ENT_HTML5, 'UTF-8');
   if ($rendered === '' || $rendered === '?') {
     return '';
   }
